@@ -1,13 +1,9 @@
 package de.jtunez.control;
 
-import de.jtunez.control.exception.PlayerException;
-import de.jtunez.entity.Song;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,8 +15,8 @@ public final class App {
   private boolean running;
   private Instant lastTick;
   private Duration elapsedSinceLastTick;
-  private TunezPlayer currentSong;
-  private final ExecutorService tunezPlayerExecutor;
+  private final ExecutorService randomSongPlayerExecutor;
+  private RandomSongPlayer randomSongPlayer;
   //
   private static final Duration TICK_EVERY = Duration.ofSeconds(5);
   //
@@ -29,7 +25,7 @@ public final class App {
   private App() {
     running = true;
     lastTick = Instant.now();
-    tunezPlayerExecutor = Executors.newSingleThreadExecutor();
+    randomSongPlayerExecutor = Executors.newSingleThreadExecutor();
   }
 
   public static void init() {
@@ -55,7 +51,9 @@ public final class App {
         throw new IllegalStateException("app not initialized");
       }
 
-      stopCurrentSong();
+      if (randomSongPlayer != null) {
+        stopRandom();
+      }
 
       instance = null;
     }
@@ -94,40 +92,17 @@ public final class App {
   }
 
   public void startRandom() {
-    if (currentSong != null) {
-      stopCurrentSong();
-    }
+    stopRandom();
 
-    playRandom();
-
-    while (currentSong != null) {
-      stopCurrentSong();
-      playRandom();
-    }
-  }
-
-  private void playRandom() {
-    Song randomSong = new SongBO().getRandomSong();
-    try {
-      currentSong = new TunezPlayer(randomSong.getFilename());
-      Logger.getLogger(App.class.getName()).log(Level.INFO, "next random song: {0} - {1}", new Object[]{randomSong.getArtist(), randomSong.getTitle()});
-      Future<Object> playingNow = tunezPlayerExecutor.submit(currentSong);
-      while (!playingNow.isDone()) {
-        playingNow.get();
-      }
-    } catch (PlayerException | InterruptedException | ExecutionException ex) {
-      Logger.getLogger(App.class.getName()).log(Level.SEVERE, null, ex);
-    }
+    randomSongPlayer = new RandomSongPlayer();
+    randomSongPlayerExecutor.submit(randomSongPlayer);
   }
 
   public void stopRandom() {
-    stopCurrentSong();
-  }
-
-  private void stopCurrentSong() {
-    if (currentSong != null) {
-      currentSong.stop();
-      currentSong = null;
+    if (randomSongPlayer == null) {
+      return;
     }
+    randomSongPlayer.stopCurrentSong();
+    randomSongPlayer = null;
   }
 }
