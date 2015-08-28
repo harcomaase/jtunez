@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>jtunez</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./resources/css/style.css" />
+    <link rel="stylesheet" href="./resources/css/pure.css" />
+    <link rel="stylesheet" href="./resources/css/pure-button.css" />
+    <link rel="stylesheet" href="./resources/css/pure-tables.css" />
+    <link rel="stylesheet" href="./resources/css/pure-forms.css" />
+  </head>
+  <body>
+    <div id="content">
+
+      <h1>jtunez</h1>
+      <div id="options_div" class="pure-form">
+        <fieldset>
+          <legend>random songs player</legend>
+          <button id="button_start_random" class="pure-button" onclick="randomPlayerStart();">start</button>
+          <button id="button_stop_random" class="pure-button" onclick="randomPlayerStop();">stop</button>
+        </fieldset>
+        <fieldset>
+          <legend>server stuff</legend>
+          <button id="button_scan" class="pure-button" onclick="scanFiles();">scan files</button>
+          <button id="button_stop" class="pure-button" onclick="stopServer();">stop</button>
+        </fieldset>
+
+      </div>
+
+    </div>
+
+    <script type="text/javascript">
+      var loc = document.location;
+      var restBaseUrl = loc.protocol + "//" + loc.host + "/rest/";
+
+      function formatDecimal(n) {
+        var minutes = Math.floor(n / 59);
+        var seconds = Math.round(n % 59);
+        return minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+      }
+
+      function randomPlayerStart() {
+        var randomPlayerStartUrl = restBaseUrl + "start_random";
+        alert(httpGet(randomPlayerStartUrl));
+      }
+
+      function randomPlayerStop() {
+        var randomPlayerStopUrl = restBaseUrl + "stop_random";
+        alert(httpGet(randomPlayerStopUrl));
+      }
+
+      function scanFiles() {
+        var scanUrl = restBaseUrl + "scan";
+        alert(httpGet(scanUrl));
+      }
+
+      function stopServer() {
+        var stopUrl = restBaseUrl + 'stop';
+        alert(httpGet(stopUrl));
+      }
+
+      function httpGet(url) {
+        var req = new XMLHttpRequest();
+        req.open('GET', url, false);
+        req.send();
+        return req.responseText;
+      }
+
+      function clearNode(node) {
+        while (node.firstChild) {
+          node.removeChild(node.firstChild);
+        }
+      }
+    </script>
+  </body>
+</html>
