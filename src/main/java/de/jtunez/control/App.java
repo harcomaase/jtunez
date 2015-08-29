@@ -15,8 +15,9 @@ public final class App {
   private boolean running;
   private Instant lastTick;
   private Duration elapsedSinceLastTick;
-  private final ExecutorService randomSongPlayerExecutor;
+  private final ExecutorService playerExecutor;
   private RandomSongPlayer randomSongPlayer;
+  private WebStreamRadioPlayer webStreamRadioPlayer;
   //
   private static final Duration TICK_EVERY = Duration.ofSeconds(5);
   //
@@ -25,7 +26,7 @@ public final class App {
   private App() {
     running = true;
     lastTick = Instant.now();
-    randomSongPlayerExecutor = Executors.newSingleThreadExecutor();
+    playerExecutor = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
   }
 
   public static void init() {
@@ -95,7 +96,7 @@ public final class App {
     stopRandom();
 
     randomSongPlayer = new RandomSongPlayer();
-    randomSongPlayerExecutor.submit(randomSongPlayer);
+    playerExecutor.submit(randomSongPlayer);
   }
 
   public void stopRandom() {
@@ -104,5 +105,19 @@ public final class App {
     }
     randomSongPlayer.stopCurrentSong();
     randomSongPlayer = null;
+  }
+
+  public void startWebradio() {
+    stopWebradio();
+    webStreamRadioPlayer = new WebStreamRadioPlayer("http://metafiles.gl-systemhaus.de/hr/youfm_2.m3u");
+    playerExecutor.submit(webStreamRadioPlayer);
+  }
+
+  public void stopWebradio() {
+    if (webStreamRadioPlayer == null) {
+      return;
+    }
+    webStreamRadioPlayer.stop();
+    webStreamRadioPlayer = null;
   }
 }

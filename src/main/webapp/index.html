@@ -16,6 +16,11 @@
       <h1>jtunez</h1>
       <div id="options_div" class="pure-form">
         <fieldset>
+          <legend>webstream player (you fm)</legend>
+          <button id="button_start_webstream" class="pure-button" onclick="webstreamStart();">start</button>
+          <button id="button_stop_wemstream" class="pure-button" onclick="webstreamStop();">stop</button>
+        </fieldset>
+        <fieldset>
           <legend>random songs player</legend>
           <button id="button_start_random" class="pure-button" onclick="randomPlayerStart();">start</button>
           <button id="button_stop_random" class="pure-button" onclick="randomPlayerStop();">stop</button>
@@ -38,6 +43,16 @@
         var minutes = Math.floor(n / 59);
         var seconds = Math.round(n % 59);
         return minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+      }
+
+      function webstreamStart() {
+        var webstreamStartUrl = restBaseUrl + "start_webradio";
+        alert(httpGet(webstreamStartUrl));
+      }
+
+      function webstreamStop() {
+        var webstreamStopUrl = restBaseUrl + "stop_webradio";
+        alert(httpGet(webstreamStopUrl));
       }
 
       function randomPlayerStart() {

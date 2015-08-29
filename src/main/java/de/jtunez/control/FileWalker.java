@@ -32,6 +32,7 @@ public class FileWalker {
   public void persist() {
     SongBO songBO = new SongBO();
     for (Song song : songs) {
+      Logger.getLogger(this.getClass().getName()).log(Level.INFO, "persisting song ''{0} - {1}'' => {2}", new Object[]{song.getArtist(), song.getTitle(), song.getFilename().toString()});
       songBO.createOrUpdate(song);
     }
   }
@@ -60,7 +61,7 @@ public class FileWalker {
       Song song = new Song();
 
       if (!file.hasId3v1Tag() && !file.hasId3v2Tag()) {
-        System.out.println("no metadata: " + path.toString());
+        Logger.getLogger(this.getClass().getName()).log(Level.INFO, "no metadata: {0}", path.toString());
         return;
       }
 
@@ -74,7 +75,7 @@ public class FileWalker {
 
       songs.add(song);
     } catch (IOException | UnsupportedTagException | InvalidDataException ex) {
-      Logger.getLogger(FileWalker.class.getName()).log(Level.SEVERE, "error while processing '" + path.toString() + "'", ex);
+      Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "error while processing '" + path.toString() + "'", ex);
     }
   }
 }

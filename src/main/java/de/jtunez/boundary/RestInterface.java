@@ -50,6 +50,22 @@ public class RestInterface {
   }
 
   @GET
+  @Path("start_webradio")
+  @Produces(MediaType.APPLICATION_JSON)
+  public String startWebradio() {
+    App.getSingleton().startWebradio();
+    return "ok";
+  }
+
+  @GET
+  @Path("stop_webradio")
+  @Produces(MediaType.APPLICATION_JSON)
+  public String stopWebradio() {
+    App.getSingleton().stopWebradio();
+    return "ok";
+  }
+
+  @GET
   @Path("scan")
   @Produces(MediaType.APPLICATION_JSON)
   public String scan() throws IOException {
