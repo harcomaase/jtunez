@@ -26,6 +26,11 @@
           <button id="button_stop_random" class="pure-button" onclick="randomPlayerStop();">stop</button>
         </fieldset>
         <fieldset>
+          <legend>volume</legend>
+          <input id="input_volume" />
+          <button id="button_volume" class="pure-button" onclick="adjustVolume();">adjust volume</button>
+        </fieldset>
+        <fieldset>
           <legend>server stuff</legend>
           <button id="button_scan" class="pure-button" onclick="scanFiles();">scan files</button>
           <button id="button_stop" class="pure-button" onclick="stopServer();">stop</button>
@@ -43,6 +48,13 @@
         var minutes = Math.floor(n / 59);
         var seconds = Math.round(n % 59);
         return minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+      }
+
+      function adjustVolume() {
+        var volumeInput = document.getElementById('input_volume');
+        var volumeUrl = restBaseUrl + "volume/" + volumeInput.value;
+        alert(volumeUrl);
+        alert(httpGet(volumeUrl));
       }
 
       function webstreamStart() {

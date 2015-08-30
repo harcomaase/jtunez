@@ -120,4 +120,7 @@ public final class App {
     webStreamRadioPlayer.stop();
     webStreamRadioPlayer = null;
   }
+
+  public void adjustVolume(float volume) {
+  }
 }
