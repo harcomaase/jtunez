@@ -16,12 +16,9 @@ public class ExperimentalPlayer {
 
   private final int BUFFER_SIZE = 128000;
 
-  public void play(InputStream sourceStream) {
+  public void play(final InputStream sourceStream) {
 
-    InputStream encodedStream = sourceStream;
-
-    try {
-      AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(encodedStream);
+    try (AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(sourceStream)) {
 
       AudioFormat audioFormat = audioInputStream.getFormat();
 
@@ -30,11 +27,12 @@ public class ExperimentalPlayer {
         sourceLine.open(audioFormat);
 
         sourceLine.start();
-        
+
         int bytesRead;
         byte[] buffer = new byte[BUFFER_SIZE];
         while ((bytesRead = audioInputStream.read(buffer, 0, buffer.length)) > -1) {
           if (bytesRead >= 0) {
+            adjustValuesForVolume(buffer, bytesRead);
             sourceLine.write(buffer, 0, bytesRead);
           }
         }
@@ -44,6 +42,13 @@ public class ExperimentalPlayer {
 
     } catch (UnsupportedAudioFileException | IOException | LineUnavailableException ex) {
       Logger.getLogger(ExperimentalPlayer.class.getName()).log(Level.SEVERE, null, ex);
+    }
+  }
+
+  private void adjustValuesForVolume(byte[] buffer, int bytesRead) {
+    float volume = App.getSingleton().getVolume();
+    for (int n = 0; n < bytesRead; n++) {
+      buffer[n] *= volume;
     }
   }
 }
