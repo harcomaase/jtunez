@@ -18,6 +18,7 @@ public final class App {
   private final ExecutorService playerExecutor;
   private RandomSongPlayer randomSongPlayer;
   private WebStreamRadioPlayer webStreamRadioPlayer;
+  private float volume = 1.0f;
   //
   private static final Duration TICK_EVERY = Duration.ofSeconds(5);
   //
@@ -121,6 +122,14 @@ public final class App {
     webStreamRadioPlayer = null;
   }
 
-  public void adjustVolume(float volume) {
+  public void adjustVolume(final float volume) {
+    if (volume < 0f || volume > 1f) {
+      return;
+    }
+    this.volume = volume;
+  }
+
+  public float getVolume() {
+    return volume;
   }
 }
