@@ -36,9 +36,16 @@ public class RestInterface {
   @GET
   @Path("volume/{volume}")
   @Produces(MediaType.APPLICATION_JSON)
-  public String volume(@PathParam("volume") float volume) {
+  public String adjustVolume(@PathParam("volume") float volume) {
     App.getSingleton().adjustVolume(volume);
     return "set to " + volume;
+  }
+
+  @GET
+  @Path("volume")
+  @Produces(MediaType.APPLICATION_JSON)
+  public String getVolume() {
+    return Float.toString(App.getSingleton().getVolume());
   }
 
   @GET

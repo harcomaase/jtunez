@@ -27,8 +27,9 @@
         </fieldset>
         <fieldset>
           <legend>volume</legend>
-          <input id="input_volume" />
-          <button id="button_volume" class="pure-button" onclick="adjustVolume();">adjust volume</button>
+          <button id="button_volume_decrease" class="pure-button" onclick="decreaseVolume();">-</button>
+          <button id="show_volume" class="pure-button pure-button-disabled pure-button-primary"></button>
+          <button id="button_volume_increase" class="pure-button" onclick="increaseVolume();">+</button>
         </fieldset>
         <fieldset>
           <legend>server stuff</legend>
@@ -43,6 +44,9 @@
     <script type="text/javascript">
       var loc = document.location;
       var restBaseUrl = loc.protocol + "//" + loc.host + "/rest/";
+      var volume = getVolume();
+      var volumeStep = 0.05;
+      showVolume();
 
       function formatDecimal(n) {
         var minutes = Math.floor(n / 59);
@@ -51,10 +55,31 @@
       }
 
       function adjustVolume() {
-        var volumeInput = document.getElementById('input_volume');
-        var volumeUrl = restBaseUrl + "volume/" + volumeInput.value;
-        alert(volumeUrl);
-        alert(httpGet(volumeUrl));
+        var volumeUrl = restBaseUrl + "volume/" + volume;
+        httpGet(volumeUrl);
+        showVolume();
+      }
+
+      function getVolume() {
+        var volumeUrl = restBaseUrl + "volume/";
+        volume = httpGet(volumeUrl);
+      }
+
+      function increaseVolume() {
+        volume -= -volumeStep;
+        adjustVolume();
+      }
+
+      function decreaseVolume() {
+        volume -= volumeStep;
+        adjustVolume();
+      }
+
+      function showVolume() {
+        getVolume();
+        var e = document.getElementById('show_volume');
+        var formattedVolume = Math.round(volume * 100 * 100) / 100;
+        e.textContent = formattedVolume + '%';
       }
 
       function webstreamStart() {

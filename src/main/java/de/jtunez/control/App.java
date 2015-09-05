@@ -15,9 +15,11 @@ public final class App {
   private boolean running;
   private Instant lastTick;
   private Duration elapsedSinceLastTick;
+  //
   private final ExecutorService playerExecutor;
   private RandomSongPlayer randomSongPlayer;
   private WebStreamRadioPlayer webStreamRadioPlayer;
+  //
   private float volume = 1.0f;
   //
   private static final Duration TICK_EVERY = Duration.ofSeconds(5);

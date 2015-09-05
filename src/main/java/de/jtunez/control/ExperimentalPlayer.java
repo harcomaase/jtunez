@@ -15,33 +15,71 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 public class ExperimentalPlayer {
 
   private final int BUFFER_SIZE = 128000;
+  private final InputStream sourceStream;
+  private boolean playing = false;
 
-  public void play(final InputStream sourceStream) {
+  public ExperimentalPlayer(InputStream inputStream) {
+    this.sourceStream = inputStream;
+  }
 
-    try (AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(sourceStream)) {
+  public void play() {
 
-      AudioFormat audioFormat = audioInputStream.getFormat();
+    try (AudioInputStream audioSourceStream = AudioSystem.getAudioInputStream(sourceStream)) {
 
-      DataLine.Info info = new DataLine.Info(SourceDataLine.class, audioFormat);
-      try (SourceDataLine sourceLine = (SourceDataLine) AudioSystem.getLine(info)) {
-        sourceLine.open(audioFormat);
+      AudioFormat sourceFormat = audioSourceStream.getFormat();
+      AudioFormat decodedFormat = createDecodedAudioFormat(sourceFormat);
 
-        sourceLine.start();
+      try (AudioInputStream decodedStream = AudioSystem.getAudioInputStream(decodedFormat, audioSourceStream)) {
 
-        int bytesRead;
-        byte[] buffer = new byte[BUFFER_SIZE];
-        while ((bytesRead = audioInputStream.read(buffer, 0, buffer.length)) > -1) {
-          if (bytesRead >= 0) {
-            adjustValuesForVolume(buffer, bytesRead);
-            sourceLine.write(buffer, 0, bytesRead);
-          }
+        DataLine.Info info = new DataLine.Info(SourceDataLine.class, decodedFormat);
+        try (SourceDataLine outputLine = (SourceDataLine) AudioSystem.getLine(info)) {
+
+          outputLine.open(decodedFormat);
+          outputLine.start();
+
+          playing = true;
+          writeStreamToLine(decodedStream, outputLine);
+
+          outputLine.drain();
         }
-
-        sourceLine.drain();
       }
 
     } catch (UnsupportedAudioFileException | IOException | LineUnavailableException ex) {
-      Logger.getLogger(ExperimentalPlayer.class.getName()).log(Level.SEVERE, null, ex);
+      Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
+    }
+  }
+
+  private void writeStreamToLine(final AudioInputStream decodedStream, final SourceDataLine sourceLine) throws IOException {
+    int bytesRead;
+    byte[] buffer = new byte[BUFFER_SIZE];
+    while (playing && (bytesRead = decodedStream.read(buffer, 0, buffer.length)) > -1) {
+      if (bytesRead >= 0) {
+        adjustValuesForVolume(buffer, bytesRead);
+        sourceLine.write(buffer, 0, bytesRead);
+      }
+    }
+  }
+
+  private AudioFormat createDecodedAudioFormat(AudioFormat sourceFormat) {
+    AudioFormat decodedFormat = new AudioFormat(
+            AudioFormat.Encoding.PCM_SIGNED,
+            sourceFormat.getSampleRate(),
+            16,
+            sourceFormat.getChannels(),
+            sourceFormat.getChannels() * 2,
+            sourceFormat.getSampleRate(),
+            false);
+    return decodedFormat;
+  }
+
+  public void stop() {
+    playing = false;
+    if (sourceStream != null) {
+      try {
+        sourceStream.close();
+      } catch (IOException ex) {
+        Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
+      }
     }
   }
 

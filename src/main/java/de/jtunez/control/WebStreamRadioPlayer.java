@@ -13,7 +13,7 @@ public class WebStreamRadioPlayer implements Callable<Object> {
 
   private String webstreamUrl;
 
-  TunezPlayer tunezPlayer;
+  ExperimentalPlayer experimentalPlayer;
 
   public WebStreamRadioPlayer(String url) {
     try {
@@ -43,13 +43,15 @@ public class WebStreamRadioPlayer implements Callable<Object> {
   public Object call() throws Exception {
 
     InputStream inputStream = new URL(webstreamUrl).openStream();
-    tunezPlayer = new TunezPlayer(inputStream);
-    tunezPlayer.call();
+    experimentalPlayer = new ExperimentalPlayer(inputStream);
+    experimentalPlayer.play();
 
     return null;
   }
 
   public void stop() {
-    tunezPlayer.stop();
+    if (experimentalPlayer != null) {
+      experimentalPlayer.stop();
+    }
   }
 }
