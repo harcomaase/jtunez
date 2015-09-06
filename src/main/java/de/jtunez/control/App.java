@@ -18,7 +18,7 @@ public final class App {
   //
   private final ExecutorService playerExecutor;
   private RandomSongPlayer randomSongPlayer;
-  private WebStreamRadioPlayer webStreamRadioPlayer;
+  private WebradioStreamPlayer webradioStreamPlayer;
   //
   private float volume = 1.0f;
   //
@@ -112,16 +112,16 @@ public final class App {
 
   public void startWebradio() {
     stopWebradio();
-    webStreamRadioPlayer = new WebStreamRadioPlayer("http://metafiles.gl-systemhaus.de/hr/youfm_2.m3u");
-    playerExecutor.submit(webStreamRadioPlayer);
+    webradioStreamPlayer = new WebradioStreamPlayer("http://metafiles.gl-systemhaus.de/hr/youfm_2.m3u");
+    playerExecutor.submit(webradioStreamPlayer);
   }
 
   public void stopWebradio() {
-    if (webStreamRadioPlayer == null) {
+    if (webradioStreamPlayer == null) {
       return;
     }
-    webStreamRadioPlayer.stop();
-    webStreamRadioPlayer = null;
+    webradioStreamPlayer.stop();
+    webradioStreamPlayer = null;
   }
 
   public void adjustVolume(final float volume) {

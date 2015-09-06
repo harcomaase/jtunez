@@ -9,13 +9,13 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class WebStreamRadioPlayer implements Callable<Object> {
+public class WebradioStreamPlayer implements Callable<Object> {
 
   private String webstreamUrl;
 
   ExperimentalPlayer experimentalPlayer;
 
-  public WebStreamRadioPlayer(String url) {
+  public WebradioStreamPlayer(String url) {
     try {
       URLConnection connection = new URL(url).openConnection();
       connection.connect();
