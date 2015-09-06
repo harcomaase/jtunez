@@ -1,5 +1,8 @@
 package de.jtunez.control;
 
+import de.jtunez.control.config.WebradioStreamRegistry;
+import de.jtunez.control.exception.PlayerException;
+import de.jtunez.entity.WebradioStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.ExecutorService;
@@ -21,6 +24,7 @@ public final class App {
   private WebradioStreamPlayer webradioStreamPlayer;
   //
   private float volume = 1.0f;
+  private WebradioStream currentWebradioStream;
   //
   private static final Duration TICK_EVERY = Duration.ofSeconds(5);
   //
@@ -30,6 +34,7 @@ public final class App {
     running = true;
     lastTick = Instant.now();
     playerExecutor = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
+    currentWebradioStream = WebradioStreamRegistry.fallback();
   }
 
   public static void init() {
@@ -110,9 +115,9 @@ public final class App {
     randomSongPlayer = null;
   }
 
-  public void startWebradio() {
+  public void startWebradio() throws PlayerException {
     stopWebradio();
-    webradioStreamPlayer = new WebradioStreamPlayer("http://metafiles.gl-systemhaus.de/hr/youfm_2.m3u");
+    webradioStreamPlayer = new WebradioStreamPlayer(currentWebradioStream);
     playerExecutor.submit(webradioStreamPlayer);
   }
 
@@ -133,5 +138,18 @@ public final class App {
 
   public float getVolume() {
     return volume;
+  }
+
+  public WebradioStream getCurrentWebradioStream() {
+    return currentWebradioStream;
+  }
+
+  public void setCurrentWebradioStream(WebradioStream currentWebradioStream) throws PlayerException {
+    boolean isPlaying = webradioStreamPlayer != null;
+    stopWebradio();
+    this.currentWebradioStream = currentWebradioStream;
+    if (isPlaying) {
+      startWebradio();
+    }
   }
 }

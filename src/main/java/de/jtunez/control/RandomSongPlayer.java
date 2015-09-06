@@ -1,5 +1,6 @@
 package de.jtunez.control;
 
+import de.jtunez.control.exception.PlayerException;
 import de.jtunez.entity.Song;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,7 +36,7 @@ public class RandomSongPlayer implements Callable<Object> {
     try {
       experimentalPlayer = new ExperimentalPlayer(Files.newInputStream(randomSong.getFilename()));
       experimentalPlayer.play();
-    } catch (IOException ex) {
+    } catch (IOException | PlayerException ex) {
       Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
     }
   }

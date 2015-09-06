@@ -16,7 +16,9 @@
       <h1>jtunez</h1>
       <div id="options_div" class="pure-form">
         <fieldset>
-          <legend>webstream player (you fm)</legend>
+          <legend>webstream player</legend>
+          <select id="webstream_select">
+          </select>
           <button id="button_start_webstream" class="pure-button" onclick="webstreamStart();">start</button>
           <button id="button_stop_wemstream" class="pure-button" onclick="webstreamStop();">stop</button>
         </fieldset>
@@ -47,11 +49,45 @@
       var volume = getVolume();
       var volumeStep = 0.1;
       showVolume();
+      var webradioStreams = getWebradioStreams();
+      showWebradioStreamOptions();
 
       function formatDecimal(n) {
         var minutes = Math.floor(n / 59);
         var seconds = Math.round(n % 59);
         return minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+      }
+
+      function switchWebradioStream() {
+        var switchWebradioStreamUrl = restBaseUrl + "webradiostream/" + document.getElementById('webstream_select').value;
+        alert(switchWebradioStreamUrl);
+        httpGet(switchWebradioStreamUrl);
+      }
+
+      function showWebradioStreamOptions() {
+        var select = document.getElementById('webstream_select');
+        var currentStream = getCurrentWebradioStream();
+        for (var n = 0; n < webradioStreams.length; n++) {
+          var stream = webradioStreams[n];
+          var opt = document.createElement('option');
+          opt.value = stream.id;
+          opt.textContent = stream.label;
+          if(stream.id === currentStream.id) {
+            opt.selected = 'true';
+          }
+          select.appendChild(opt);
+        }
+        select.onchange = switchWebradioStream;
+      }
+
+      function getWebradioStreams() {
+        var getWebradioStreamsUrl = restBaseUrl + "webradiostreams/";
+        return JSON.parse(httpGet(getWebradioStreamsUrl));
+      }
+
+      function getCurrentWebradioStream() {
+        var getCurrentWebradioStreamUrl = restBaseUrl + "currentwebradiostream/";
+        return JSON.parse(httpGet(getCurrentWebradioStreamUrl));
       }
 
       function adjustVolume() {
@@ -84,22 +120,22 @@
 
       function webstreamStart() {
         var webstreamStartUrl = restBaseUrl + "start_webradio";
-        alert(httpGet(webstreamStartUrl));
+        httpGet(webstreamStartUrl);
       }
 
       function webstreamStop() {
         var webstreamStopUrl = restBaseUrl + "stop_webradio";
-        alert(httpGet(webstreamStopUrl));
+        httpGet(webstreamStopUrl);
       }
 
       function randomPlayerStart() {
         var randomPlayerStartUrl = restBaseUrl + "start_random";
-        alert(httpGet(randomPlayerStartUrl));
+        httpGet(randomPlayerStartUrl);
       }
 
       function randomPlayerStop() {
         var randomPlayerStopUrl = restBaseUrl + "stop_random";
-        alert(httpGet(randomPlayerStopUrl));
+        httpGet(randomPlayerStopUrl);
       }
 
       function scanFiles() {

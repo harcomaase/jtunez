@@ -1,5 +1,7 @@
 package de.jtunez.control;
 
+import de.jtunez.control.exception.PlayerException;
+import de.jtunez.entity.WebradioStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -11,17 +13,16 @@ import java.util.logging.Logger;
 
 public class WebradioStreamPlayer implements Callable<Object> {
 
-  private String webstreamUrl;
+  private final String webstreamUrl;
+  private ExperimentalPlayer experimentalPlayer;
 
-  ExperimentalPlayer experimentalPlayer;
-
-  public WebradioStreamPlayer(String url) {
+  public WebradioStreamPlayer(final WebradioStream webradioStream) throws PlayerException {
     try {
-      URLConnection connection = new URL(url).openConnection();
+      final URLConnection connection = new URL(webradioStream.getStreamUrl()).openConnection();
       connection.connect();
-      StringBuilder response = new StringBuilder();
+      final StringBuilder response = new StringBuilder();
       try (InputStream inputStream = connection.getInputStream()) {
-        byte[] buf = new byte[1024];
+        final byte[] buf = new byte[1024];
         int bytesRead;
         while ((bytesRead = inputStream.read(buf)) > -1) {
           response.append(new String(buf, 0, bytesRead));
@@ -32,17 +33,15 @@ public class WebradioStreamPlayer implements Callable<Object> {
 
       webstreamUrl = response.toString();
 
-    } catch (MalformedURLException ex) {
-      Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
     } catch (IOException ex) {
-      Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
+      throw new PlayerException("error during webstream initialisation", ex);
     }
   }
 
   @Override
   public Object call() throws Exception {
 
-    InputStream inputStream = new URL(webstreamUrl).openStream();
+    final InputStream inputStream = new URL(webstreamUrl).openStream();
     experimentalPlayer = new ExperimentalPlayer(inputStream);
     experimentalPlayer.play();
 
@@ -52,6 +51,7 @@ public class WebradioStreamPlayer implements Callable<Object> {
   public void stop() {
     if (experimentalPlayer != null) {
       experimentalPlayer.stop();
+      experimentalPlayer = null;
     }
   }
 }

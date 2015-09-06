@@ -1,5 +1,6 @@
 package de.jtunez.control;
 
+import de.jtunez.control.exception.PlayerException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
@@ -22,7 +23,7 @@ public class ExperimentalPlayer {
     this.sourceStream = inputStream;
   }
 
-  public void play() {
+  public void play() throws PlayerException {
 
     try (AudioInputStream audioSourceStream = AudioSystem.getAudioInputStream(sourceStream)) {
 
@@ -45,7 +46,7 @@ public class ExperimentalPlayer {
       }
 
     } catch (UnsupportedAudioFileException | IOException | LineUnavailableException ex) {
-      Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
+      throw new PlayerException("error during playback", ex);
     }
   }
 
