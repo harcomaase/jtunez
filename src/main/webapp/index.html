@@ -51,6 +51,7 @@
       showVolume();
       var webradioStreams = getWebradioStreams();
       showWebradioStreamOptions();
+      setInterval(updateWebstreamSelection, 10000);
 
       function formatDecimal(n) {
         var minutes = Math.floor(n / 59);
@@ -71,12 +72,21 @@
           var opt = document.createElement('option');
           opt.value = stream.id;
           opt.textContent = stream.label;
-          if(stream.id === currentStream.id) {
-            opt.selected = 'true';
+          if (stream.id === currentStream.id) {
+            opt.selected = true;
           }
           select.appendChild(opt);
         }
         select.onchange = switchWebradioStream;
+      }
+
+      function updateWebstreamSelection() {
+        var select = document.getElementById('webstream_select');
+        var currentStream = getCurrentWebradioStream();
+        for (var n = 0; n < select.length; n++) {
+          var opt = select.options[n];
+          opt.selected = opt.value === currentStream.id ? true : false;
+        }
       }
 
       function getWebradioStreams() {
