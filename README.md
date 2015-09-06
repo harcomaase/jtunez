@@ -11,7 +11,7 @@ What it does by now:
 - random play local music
 - stream web radio
 
-What is planned:
+What is new implemented, but still under construction:
 - adjust the volume
 - provide a list of possible webradio streams to choose from
 
