@@ -1,54 +1,34 @@
 package de.jtunez.control;
 
 import de.jtunez.entity.Song;
-import de.jtunez.entity.PlaylistXSong;
-import de.jtunez.entity.dao.SongDAO;
-import de.jtunez.entity.dao.PlaylistXSongDAO;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.sql.SQLException;
+import java.nio.file.Path;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class SongBO {
 
-  private final SongDAO songDAO;
+  private static final List<Song> SONGS = new LinkedList<>();
+  private static final List<String> PLAYLISTS = new LinkedList<>();
+  //
+  private static final Logger LOG = Logger.getLogger(SongBO.class.getName());
 
   public SongBO() {
-    try {
-      this.songDAO = new SongDAO();
-    } catch (IOException | SQLException ex) {
-      Logger.getLogger(SongBO.class.getName()).log(Level.SEVERE, null, ex);
-      throw new IllegalStateException(ex);
-    }
   }
 
   public Song getRandomSong() {
-    try {
-      List<Long> ids = songDAO.findAllIds();
-      return findById(ids.get((int) (Math.random() * ids.size())));
-    } catch (SQLException ex) {
-      Logger.getLogger(SongBO.class.getName()).log(Level.SEVERE, null, ex);
-    }
-    return null;
+    return SONGS.get((int) (Math.random() * SONGS.size()));
   }
 
-  public List<Song> findByPlaylistId(long playlistId) {
-    List<Song> result = new LinkedList<>();
-    try {
-      List<PlaylistXSong> xs = new PlaylistXSongDAO().findByPlaylistId(playlistId);
-      result.addAll(findByIds(xs.stream().map(PlaylistXSong::getSongId).collect(Collectors.toList())));
-    } catch (IOException | SQLException ex) {
-      Logger.getLogger(SongBO.class.getName()).log(Level.SEVERE, null, ex);
-    }
-    return result;
+  public List<Song> findByPlaylist(String playlist) {
+    return SONGS.stream()
+            .filter(song -> song.getPlaylist().equals(playlist))
+            .collect(Collectors.toList());
   }
 
   public Song findById(long songId) {
@@ -60,70 +40,60 @@ public class SongBO {
   }
 
   private List<Song> findByIds(List<Long> ids) {
-    try {
-      if (ids.size() > 0) {
-        return songDAO.findByIds(ids);
-      }
-    } catch (SQLException ex) {
-      Logger.getLogger(SongBO.class.getName()).log(Level.SEVERE, null, ex);
-    }
-    return new LinkedList<>();
+    return SONGS.stream()
+            .filter(song -> ids.contains(song.getId()))
+            .collect(Collectors.toList());
   }
 
-  public void createOrUpdate(Song song) {
-    Song fromDB = findSong(song);
-    if (fromDB == null) {
-      create(song);
-      return;
-    }
-    song.setId(fromDB.getId());
-    if (alreadyPresent(fromDB, song)) {
-      //do nothing
-      return;
-    }
-    update(song);
+  public void save(List<Song> songs) {
+    SONGS.clear();
+    PLAYLISTS.clear();
+    Map<String, Path> magicPathMap = new HashMap<>();
+    songs.stream()
+            .forEach(song -> {
+              LOG.log(Level.INFO, "persisting song ''{0} - {1}'' => {2}", new Object[]{song.getArtist(), song.getTitle(), song.getFilename().toString()});
+              String playlist = createPlaylistName(song.getFilename().getParent(), magicPathMap);
+              LOG.log(Level.INFO, " - assigning playlist ''{0}''", playlist);
+              song.setPlaylist(playlist);
+              SONGS.add(song);
+            });
+    PLAYLISTS.addAll(songs.stream().
+            map(Song::getPlaylist)
+            .distinct()
+            .sorted()
+            .collect(Collectors.toList()));
   }
 
-  private Song findSong(Song song) {
-    try {
-      return songDAO.findByFilename(song.getFilename().toString());
-    } catch (SQLException ex) {
-      Logger.getLogger(SongBO.class.getName()).log(Level.SEVERE, null, ex);
-    }
-    return null;
+  public List<String> getPlaylists() {
+    return new LinkedList<>(PLAYLISTS);
   }
 
-  private void update(Song song) {
-    try {
-      songDAO.update(song);
-    } catch (SQLException ex) {
-      Logger.getLogger(SongBO.class.getName()).log(Level.SEVERE, null, ex);
+  private String createPlaylistName(Path folder, Map<String, Path> magicPathMap) {
+    String folderName = folder.getFileName().toString();
+    if (tryName(magicPathMap, folderName, folder)) {
+      return folderName;
     }
-  }
-
-  private void create(Song song) {
-    try {
-      songDAO.create(song);
-    } catch (SQLException ex) {
-      Logger.getLogger(SongBO.class.getName()).log(Level.SEVERE, "song could not be created", ex);
+    Path parentFolder = folder.getParent();
+    String parentFolderName = parentFolder.getFileName().toString() + "-" + folderName;
+    if (tryName(magicPathMap, parentFolderName, folder)) {
+      return parentFolderName;
     }
-  }
-
-  private boolean alreadyPresent(Song fromDB, Song song) {
-    for (Field field : Song.class.getDeclaredFields()) {
-      try {
-        Method getter = Song.class.getDeclaredMethod("get" + capitalise(field.getName()));
-        if (!Objects.equals(getter.invoke(fromDB), getter.invoke(song))) {
-          return false;
-        }
-      } catch (IllegalArgumentException | IllegalAccessException | NoSuchMethodException | SecurityException | InvocationTargetException ex) {
-        Logger.getLogger(SongBO.class.getName()).log(Level.SEVERE, null, ex);
+    for (int i = 1; i < 11; i += 1) {
+      String numericalFolderName = parentFolderName + "_" + i;
+      if (tryName(magicPathMap, numericalFolderName, folder)) {
+        return numericalFolderName;
       }
     }
-    return true;
+    return parentFolderName; //meh
   }
 
-  private String capitalise(String name) {
-    return name.substring(0, 1).toUpperCase() + name.substring(1);
+  private boolean tryName(Map<String, Path> magicPathMap, String parentFolderName, Path folder) {
+    Path parentFolderPath = magicPathMap.get(parentFolderName);
+    if (parentFolderPath == null) {
+      magicPathMap.put(parentFolderName, folder);
+      return true;
+    }
+    return folder.equals(parentFolderPath);
   }
+
 }

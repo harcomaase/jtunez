@@ -8,6 +8,7 @@ public class Song {
 
   private long id;
   private Path filename;
+  private String playlist;
   private String artist;
   private String title;
   private String album;
@@ -28,6 +29,14 @@ public class Song {
 
   public void setFilename(Path filename) {
     this.filename = filename;
+  }
+
+  public String getPlaylist() {
+    return playlist;
+  }
+
+  public void setPlaylist(String playlist) {
+    this.playlist = playlist;
   }
 
   public String getArtist() {

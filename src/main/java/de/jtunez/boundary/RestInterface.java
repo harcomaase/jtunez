@@ -7,8 +7,6 @@ import de.jtunez.control.config.WebradioStreamRegistry;
 import de.jtunez.control.exception.PlayerException;
 import de.jtunez.entity.WebradioStream;
 import de.jtunez.entity.Song;
-import de.jtunez.entity.Playlist;
-import de.jtunez.entity.dao.PlaylistDAO;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
@@ -130,14 +128,14 @@ public class RestInterface {
   @GET
   @Path("get_playlists")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<Playlist> getPlaylists() throws Exception {
-    return new PlaylistDAO().findAll();
+  public List<String> getPlaylists() throws Exception {
+    return new SongBO().getPlaylists();
   }
 
   @GET
   @Path("get_songs_for_playlist/{playlist_id}")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<Song> getPlaylists(@PathParam("playlist_id") long playlistId) throws Exception {
-    return new SongBO().findByPlaylistId(playlistId);
+  public List<Song> getPlaylist(@PathParam("playlist_id") String playlist) throws Exception {
+    return new SongBO().findByPlaylist(playlist);
   }
 }

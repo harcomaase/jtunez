@@ -31,10 +31,7 @@ public class FileWalker {
 
   public void persist() {
     SongBO songBO = new SongBO();
-    for (Song song : songs) {
-      Logger.getLogger(this.getClass().getName()).log(Level.INFO, "persisting song ''{0} - {1}'' => {2}", new Object[]{song.getArtist(), song.getTitle(), song.getFilename().toString()});
-      songBO.createOrUpdate(song);
-    }
+    songBO.save(songs);
   }
 
   private void walkDirectory(Path baseDir) throws IOException {

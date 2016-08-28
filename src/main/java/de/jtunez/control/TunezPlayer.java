@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.player.Player;
 
+@Deprecated
 public class TunezPlayer implements Callable<Object> {
 
   private final Player player;
