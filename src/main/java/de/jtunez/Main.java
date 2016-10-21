@@ -5,6 +5,7 @@ import de.jtunez.control.App;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+// Just use the amp_server ;)
 public class Main {
 
   private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
